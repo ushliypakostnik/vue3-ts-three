@@ -6,6 +6,14 @@
 import { defineComponent, onMounted } from 'vue';
 
 import * as THREE from 'three';
+import {
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer,
+  DirectionalLight,
+  SpotLight,
+  Mesh,
+} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export default defineComponent({
@@ -17,21 +25,23 @@ export default defineComponent({
     let render: () => void;
     let onWindowResize: () => void;
 
-    let camera: any = null;
-    let scene: any = null;
-    let renderer: any = null;
+    let container: HTMLElement;
 
-    let light1: any = null;
-    let light2: any = null;
-    let light3: any = null;
+    let camera: PerspectiveCamera = new THREE.PerspectiveCamera();
+    let scene: Scene = new THREE.Scene();
+    let renderer: WebGLRenderer = new THREE.WebGLRenderer({ antialias: true });
 
-    let cube: any = null;
-    let ground: any = null;
+    let light1: DirectionalLight = new THREE.DirectionalLight(0xffffff);
+    let light2: SpotLight = new THREE.SpotLight(0xffffff, 5, 1000);
+    let light3: SpotLight = new THREE.SpotLight(0xffffff, 5, 1000);
+
+    let cube: Mesh = new THREE.Mesh();
+    let ground: Mesh = new THREE.Mesh();
 
     init = () => {
       // Core
 
-      const container = document.getElementById('scene') as HTMLElement;
+      container = document.getElementById('scene') as HTMLElement;
 
       camera = new THREE.PerspectiveCamera(
         50,
@@ -44,11 +54,9 @@ export default defineComponent({
       camera.position.y = 150;
       camera.position.z = 400;
 
-      scene = new THREE.Scene();
       scene.background = new THREE.Color(0x050505);
       scene.fog = new THREE.Fog(0x050505, 50, 1000);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(container.clientWidth, container.clientHeight);
       renderer.shadowMap.enabled = true;
@@ -57,12 +65,11 @@ export default defineComponent({
       scene.add(camera);
 
       // Lights
-      light1 = new THREE.DirectionalLight(0xffffff);
       light1.position.set(0.5, 1.0, 0.5).normalize();
       scene.add(light1);
 
       scene.add(new THREE.AmbientLight(0x222222));
-      light2 = new THREE.SpotLight(0xffffff, 5, 1000);
+
       light2.position.set(200, 250, 500);
       light2.angle = 0.5;
       light2.penumbra = 0.5;
@@ -71,7 +78,6 @@ export default defineComponent({
       light2.shadow.mapSize.height = 1024;
       scene.add(light2);
 
-      light3 = new THREE.SpotLight(0xffffff, 5, 1000);
       light3.position.set(-100, 350, 350);
       light3.angle = 0.5;
       light3.penumbra = 0.5;
@@ -97,7 +103,8 @@ export default defineComponent({
       const ground = new THREE.Mesh(gg, gm);
       ground.rotation.x = -Math.PI / 2;
       ground.material.map!.repeat.set(16, 16);
-      ground.material.map!.wrapS = ground.material.map!.wrapT = THREE.RepeatWrapping;
+      ground.material.map!.wrapS = ground.material.map!.wrapT =
+        THREE.RepeatWrapping;
       ground.material.map!.encoding = THREE.sRGBEncoding;
       ground.receiveShadow = true;
       scene.add(ground);
@@ -142,6 +149,8 @@ export default defineComponent({
       animate,
       onWindowResize,
       render,
+      cube,
+      ground,
     };
   },
 });
